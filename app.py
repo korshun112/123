@@ -1,21 +1,26 @@
 import os
 import re
 from dotenv import load_dotenv
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
 load_dotenv()
 BOT_TOKEN = os.environ['BOT_TOKEN']
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
+WELCOME_IMAGE_URL = os.environ.get('WELCOME_IMAGE_URL')
 WAITING_ORDER = 1
 def get_main_keyboard():
-    buttons = [
-        [KeyboardButton("📋 Тарифы"), KeyboardButton("📩 Заказать бота")],
-        [KeyboardButton("ℹ️ О студии")]
+    keyboard = [
+        [InlineKeyboardButton("📋 Тарифы", callback_data="tariffs")],
+        [InlineKeyboardButton("📩 Заказать бота", callback_data="order")],
+        [InlineKeyboardButton("ℹ️ О студии", callback_data="about")]
     ]
-    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+    return InlineKeyboardMarkup(keyboard)
+def get_cancel_keyboard():
+    keyboard = [[InlineKeyboardButton("❌ Отменить заказ", callback_data="cancel_order")]]
+    return InlineKeyboardMarkup(keyboard)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
-    await update.message.reply_text(
+    caption = (
         "💎 *Уважаемый клиент!*\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         "Вы обратились в студию разработки Telegram-ботов.\n"
@@ -29,11 +34,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "📌 *Ознакомьтесь с тарифами или оставьте заявку* —\n"
         "мы подготовим индивидуальное предложение.\n\n"
-        "👇 Используйте кнопки ниже для навигации.",
-        parse_mode="Markdown",
-        reply_markup=get_main_keyboard()
+        "👇 Используйте кнопки ниже для навигации."
     )
+    if WELCOME_IMAGE_URL:
+        await update.message.reply_photo(
+            photo=WELCOME_IMAGE_URL,
+            caption=caption,
+            parse_mode="Markdown",
+            reply_markup=get_main_keyboard()
+        )
+    else:
+        await update.message.reply_text(
+            caption,
+            parse_mode="Markdown",
+            reply_markup=get_main_keyboard()
+        )
     return ConversationHandler.END
+async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+    if data == "tariffs":
+        await show_tariffs(update, context)
+    elif data == "order":
+        await start_order(update, context)
+    elif data == "about":
+        await about_us(update, context)
+    elif data == "cancel_order":
+        await cancel(update, context)
 async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "💼 *НАШИ ТАРИФЫ*\n"
@@ -56,9 +84,11 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   • Обязательная подписка на ваш Telegram-канал – привлекайте новых клиентов!\n\n"
         "📩 Для заказа нажмите кнопку «Заказать бота» в главном меню."
     )
-    await update.message.reply_text(text, parse_mode="Markdown")
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+    else:
+        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
 async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Тоже убрал фото для надёжности
     text = (
         "ℹ️ *О НАШЕЙ СТУДИИ*\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
@@ -76,7 +106,10 @@ async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📬 Для сотрудничества воспользуйтесь кнопкой «Заказать бота»\n"
         "или напишите нам напрямую – мы всегда на связи."
     )
-    await update.message.reply_text(text, parse_mode="Markdown")
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+    else:
+        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
 async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "📝 *ОФОРМЛЕНИЕ ЗАЯВКИ*\n"
@@ -92,9 +125,12 @@ async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "⏳ *Ожидайте ответа в течение 12 часов* – мы изучим ваши пожелания\n"
         "и подготовим предложение.\n\n"
-        "Для отмены диалога нажмите /start."
+        "Для отмены диалога нажмите кнопку ниже."
     )
-    await update.message.reply_text(text, parse_mode="Markdown")
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=get_cancel_keyboard())
+    else:
+        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=get_cancel_keyboard())
     context.user_data['in_order'] = True
     return WAITING_ORDER
 async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -111,7 +147,7 @@ async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "✅ *Ваша заявка принята!*\n\n"
         "Мы свяжемся с вами в ближайшее время (обычно в течение 12 часов).\n"
-        "Чтобы вернуться в главное меню, нажмите /start.",
+        "Чтобы вернуться в главное меню, нажмите кнопку ниже.",
         parse_mode="Markdown",
         reply_markup=get_main_keyboard()
     )
@@ -133,7 +169,7 @@ async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Ответ придёт в течение 12 часов.",
         parse_mode="Markdown"
     )
-async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+asynс def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
     if update.message.reply_to_message:
@@ -141,7 +177,6 @@ async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE)
         match = re.search(r'ID:\s*(\d+)', original)
         if match:
             user_id = int(match.group(1))
-            # Используем Markdown только для заголовка, а сам текст клиента отправляем как обычный
             reply_text = f"👨‍💼 *Ответ менеджера:*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n{update.message.text}"
             await context.bot.send_message(
                 chat_id=user_id,
@@ -171,7 +206,9 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
-    await update.message.reply_text(
+    if update.callback_query:
+        await update.callback_query.delete_message()
+    await update.effective_message.reply_text(
         "⏹ *Диалог отменён.* Вы вернулись в главное меню.",
         parse_mode="Markdown",
         reply_markup=get_main_keyboard()
@@ -179,20 +216,23 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
+
     conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(filters.Regex("^(📩 Заказать бота)$"), start_order)],
+        entry_points=[CallbackQueryHandler(start_order, pattern="^order$")],
         states={
-            WAITING_ORDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_order)],
+            WAITING_ORDER: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_order),
+                CallbackQueryHandler(cancel, pattern="^cancel_order$")
+            ],
         },
-        fallbacks=[CommandHandler("start", cancel)],
+        fallbacks=[CommandHandler("start", start)],
     )
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv_handler)
-    app.add_handler(MessageHandler(filters.Regex("^(📋 Тарифы)$"), show_tariffs))
-    app.add_handler(MessageHandler(filters.Regex("^(ℹ️ О студии)$"), about_us))
+    app.add_handler(CallbackQueryHandler(button_callback, pattern="^(tariffs|order|about|cancel_order)$"))
     app.add_handler(MessageHandler(filters.TEXT & filters.User(ADMIN_ID), handle_admin_reply))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback))
-    print("🚀 Бот успешно запущен и готов к работе (упрощённая версия).")
+    print("🚀 Бот запущен.")
     app.run_polling()
 if __name__ == "__main__":
     main()
