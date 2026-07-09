@@ -3,12 +3,17 @@ import re
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
+
 load_dotenv()
+
 BOT_TOKEN = os.environ['BOT_TOKEN']
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
 WELCOME_IMAGE_URL = os.environ.get('WELCOME_IMAGE_URL')
+
 WAITING_ORDER = 1
-LINE = "━━━━━━━━━━━━━━━━━━━━"  # 20 символов
+
+LINE = "━━━━━━━━━━━━━━━━━━━━━"  # 23 символа
+
 def get_main_keyboard():
     keyboard = [
         [InlineKeyboardButton("📋 Тарифы", callback_data="tariffs")],
@@ -16,9 +21,11 @@ def get_main_keyboard():
         [InlineKeyboardButton("ℹ️ О студии", callback_data="about")]
     ]
     return InlineKeyboardMarkup(keyboard)
+
 def get_cancel_keyboard():
     keyboard = [[InlineKeyboardButton("❌ Отменить заказ", callback_data="cancel_order")]]
     return InlineKeyboardMarkup(keyboard)
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
     caption = (
@@ -54,6 +61,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(caption, parse_mode="Markdown", reply_markup=get_main_keyboard())
     return ConversationHandler.END
+
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -66,6 +74,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await about_us(update, context)
     elif data == "cancel_order":
         await cancel(update, context)
+
 async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"💼 *НАШИ ТАРИФЫ*\n"
@@ -93,6 +102,7 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📩 Для заказа нажмите кнопку «Заказать бота» в главном меню."
     )
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+
 async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"ℹ️ *О НАШЕЙ СТУДИИ*\n"
@@ -118,6 +128,7 @@ async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "или напишите нам напрямую – мы всегда на связи."
     )
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+
 async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"📝 *ОФОРМЛЕНИЕ ЗАЯВКИ*\n"
@@ -139,6 +150,7 @@ async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_cancel_keyboard())
     context.user_data['in_order'] = True
     return WAITING_ORDER
+
 async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     text = update.message.text
@@ -159,6 +171,7 @@ async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     context.user_data['in_order'] = False
     return ConversationHandler.END
+
 async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if user.id == ADMIN_ID:
@@ -175,6 +188,7 @@ async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Ответ придёт в течение 12 часов.",
         parse_mode="Markdown"
     )
+
 async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
@@ -190,16 +204,19 @@ async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await update.message.reply_text("⚠️ *Не удалось определить получателя.*\nУбедитесь, что вы отвечаете на сообщение, пересланное от клиента.", parse_mode="Markdown")
     else:
         await update.message.reply_text("ℹ️ *Чтобы ответить клиенту,* нажмите «Ответить» на его сообщении в этом чате.", parse_mode="Markdown")
+
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get('in_order'):
         return await receive_order(update, context)
     if update.effective_user.id != ADMIN_ID:
         return await forward_to_admin(update, context)
     await update.message.reply_text("Используйте, пожалуйста, кнопки меню для навигации.", reply_markup=get_main_keyboard())
+
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
     await update.effective_message.reply_text("⏹ *Диалог отменён.* Вы вернулись в главное меню.", parse_mode="Markdown", reply_markup=get_main_keyboard())
     return ConversationHandler.END
+
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     conv_handler = ConversationHandler(
@@ -220,5 +237,6 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback))
     print("🚀 Бот запущен.")
     app.run_polling()
+
 if __name__ == "__main__":
     main()
