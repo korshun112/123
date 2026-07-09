@@ -22,7 +22,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
     caption = (
         "✨ *Уважаемый клиент!* ✨\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "• • • • • • • • • • • •\n\n"
         "Вы обратились в студию разработки Telegram-ботов.\n"
         "Мы создаём *автоматизированные решения* для вашего бизнеса.\n\n"
         "💎 *Что мы предлагаем:*\n"
@@ -40,7 +40,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   🎬 YouTube-блогеры и создатели контента\n"
         "   🌐 Интернет-магазины, сайты и онлайн-сервисы\n"
         "   и другие — подберём решение под ваши задачи.\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• • • • • • • • • • • •\n"
         "📌 *Ознакомьтесь с тарифами* или *оставьте заявку* —\n"
         "мы подготовим индивидуальное коммерческое предложение.\n\n"
         "👇 *Нажмите на кнопку ниже, чтобы продолжить*"
@@ -73,7 +73,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "💼 *НАШИ ТАРИФЫ*\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "• • • • • • • • • • • •\n\n"
         "🔹 *Базовый* – от 549 ₽\n"
         "   • Разработка базового бота для бизнеса или личного использования\n"
         "   • Бесплатный хостинг (управление – самостоятельно или с нашей помощью)\n"
@@ -84,7 +84,7 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   • Размещение на надёжном платном хостинге (высокая доступность и скорость)\n"
         "   • Полное сопровождение и техническая поддержка\n"
         "   • Стоимость хостинга – от 99 ₽/мес (зависит от нагрузки)\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• • • • • • • • • • • •\n"
         "🖌️ *Для всех тарифов* – мы разрабатываем индивидуальный дизайн:\n"
         "   цветовая схема, логотип, тональность общения – всё под ваш бренд.\n\n"
         "📢 *Дополнительные опции (любой тариф):*\n"
@@ -101,7 +101,7 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "ℹ️ *О НАШЕЙ СТУДИИ*\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "• • • • • • • • • • • •\n\n"
         "Мы — небольшая студия разработчиков, специализирующаяся на создании Telegram-ботов\n"
         "для бизнеса. Наш ведущий специалист имеет сертификат об окончании\n"
         "*очного курса программирования на Python от МФТИ (Московского физико-технического института)*\n"
@@ -118,7 +118,7 @@ async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   • Боты для YouTube-каналов с генерацией идей для контента\n"
         "   • Боты-помощники для техподдержки сайтов и интернет-магазинов\n"
         "   • Автоматизация записи и управления клиентами в разных сферах\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• • • • • • • • • • • •\n"
         "📬 Для сотрудничества воспользуйтесь кнопкой «Заказать бота»\n"
         "или напишите нам напрямую – мы всегда на связи."
     )
@@ -126,7 +126,7 @@ async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "📝 *ОФОРМЛЕНИЕ ЗАЯВКИ*\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "• • • • • • • • • • • •\n\n"
         "Пожалуйста, опишите ваш проект в одном сообщении. Укажите:\n\n"
         "❄️ *Цель и сфера* – для чего нужен бот, какая у вас деятельность\n"
         "🌀 *Функционал* – запись, портфолио, админ-панель, онлайн-оплата, генерация идей, техподдержка и т.д.\n"
@@ -136,7 +136,7 @@ async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Встроить рекламные блоки\n"
         "• Сделать обязательную подписку на ваш Telegram-канал\n"
         "• Получить исходный код на GitHub\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• • • • • • • • • • • •\n"
         "⏳ *Ожидайте ответа в течение 12 часов* – мы изучим ваши пожелания\n"
         "и подготовим предложение.\n\n"
         "Для отмены диалога нажмите кнопку ниже."
@@ -150,7 +150,7 @@ async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=f"🆕 *НОВАЯ ЗАЯВКА*\n"
-             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+             f"• • • • • • • • • • • •\n"
              f"👤 Клиент: {user.full_name} (ID: `{user.id}`)\n"
              f"📩 Текст заявки:\n{text}",
         parse_mode="Markdown"
@@ -171,7 +171,7 @@ async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=f"💬 *Сообщение от клиента*\n"
-             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+             f"• • • • • • • • • • • •\n"
              f"👤 {user.full_name} (ID: `{user.id}`):\n{update.message.text}",
         parse_mode="Markdown"
     )
@@ -188,7 +188,7 @@ async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE)
         match = re.search(r'ID:\s*(\d+)', original)
         if match:
             user_id = int(match.group(1))
-            reply_text = f"👨‍💼 *Ответ менеджера:*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{update.message.text}"
+            reply_text = f"👨‍💼 *Ответ менеджера:*\n• • • • • • • • • • • •\n{update.message.text}"
             await context.bot.send_message(
                 chat_id=user_id,
                 text=reply_text,
