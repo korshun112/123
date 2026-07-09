@@ -15,7 +15,6 @@ def get_main_keyboard():
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
-    # Отправляем только текст — надёжно и быстро
     await update.message.reply_text(
         "💎 *Уважаемый клиент!*\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
