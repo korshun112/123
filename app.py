@@ -8,7 +8,7 @@ BOT_TOKEN = os.environ['BOT_TOKEN']
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
 WELCOME_IMAGE_URL = os.environ.get('WELCOME_IMAGE_URL')
 WAITING_ORDER = 1
-LINE = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+LINE = "━━━━━━━━━━━━━━━━━━━━"  # 20 символов
 def get_main_keyboard():
     keyboard = [
         [InlineKeyboardButton("📋 Тарифы", callback_data="tariffs")],
