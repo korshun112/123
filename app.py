@@ -6,8 +6,9 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 load_dotenv()
 BOT_TOKEN = os.environ['BOT_TOKEN']
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
-WELCOME_IMAGE_URL = os.environ.get('WELCOME_IMAGE_URL')  # опционально
+WELCOME_IMAGE_URL = os.environ.get('WELCOME_IMAGE_URL')
 WAITING_ORDER = 1
+LINE = "───────────────"  # 15 символов, помещается в одну строку
 def get_main_keyboard():
     keyboard = [
         [InlineKeyboardButton("📋 Тарифы", callback_data="tariffs")],
@@ -21,8 +22,8 @@ def get_cancel_keyboard():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
     caption = (
-        "✨ *Уважаемый клиент!* ✨\n"
-        "• • • • • • • • • • • •\n\n"
+        f"✨ *Уважаемый клиент!* ✨\n"
+        f"{LINE}\n\n"
         "Вы обратились в студию разработки Telegram-ботов.\n"
         "Мы создаём *автоматизированные решения* для вашего бизнеса.\n\n"
         "💎 *Что мы предлагаем:*\n"
@@ -40,19 +41,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   🎬 YouTube-блогеры и создатели контента\n"
         "   🌐 Интернет-магазины, сайты и онлайн-сервисы\n"
         "   и другие — подберём решение под ваши задачи.\n\n"
-        "• • • • • • • • • • • •\n"
+        f"{LINE}\n"
         "📌 *Ознакомьтесь с тарифами* или *оставьте заявку* —\n"
         "мы подготовим индивидуальное коммерческое предложение.\n\n"
         "👇 *Нажмите на кнопку ниже, чтобы продолжить*"
     )
     if WELCOME_IMAGE_URL:
         try:
-            await update.message.reply_photo(
-                photo=WELCOME_IMAGE_URL,
-                caption=caption,
-                parse_mode="Markdown",
-                reply_markup=get_main_keyboard()
-            )
+            await update.message.reply_photo(photo=WELCOME_IMAGE_URL, caption=caption, parse_mode="Markdown", reply_markup=get_main_keyboard())
         except Exception:
             await update.message.reply_text(caption, parse_mode="Markdown", reply_markup=get_main_keyboard())
     else:
@@ -72,8 +68,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await cancel(update, context)
 async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "💼 *НАШИ ТАРИФЫ*\n"
-        "• • • • • • • • • • • •\n\n"
+        f"💼 *НАШИ ТАРИФЫ*\n"
+        f"{LINE}\n\n"
         "🔹 *Базовый* – от 549 ₽\n"
         "   • Разработка базового бота для бизнеса или личного использования\n"
         "   • Бесплатный хостинг (управление – самостоятельно или с нашей помощью)\n"
@@ -84,15 +80,14 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   • Размещение на надёжном платном хостинге (высокая доступность и скорость)\n"
         "   • Полное сопровождение и техническая поддержка\n"
         "   • Стоимость хостинга – от 99 ₽/мес (зависит от нагрузки)\n\n"
-        "• • • • • • • • • • • •\n"
+        f"{LINE}\n"
         "🖌️ *Для всех тарифов* – мы разрабатываем индивидуальный дизайн:\n"
         "   цветовая схема, логотип, тональность общения – всё под ваш бренд.\n\n"
         "📢 *Дополнительные опции (любой тариф):*\n"
         "   • Встроенная реклама внутри бота\n"
         "   • Обязательная подписка на ваш Telegram-канал – привлекайте новых клиентов!\n"
         "   • Размещение исходного кода на GitHub (по вашему желанию)\n"
-        "   • Внесение изменений и доработок в любое время после сдачи проекта\n"
-        "     (стоимость зависит от сложности)\n"
+        "   • Внесение изменений и доработок в любое время после сдачи проекта (стоимость зависит от сложности)\n"
         "   • Боты для YouTube (генерация идей, интерактивные опросы, аналитика)\n"
         "   • Боты для техподдержки сайтов, онлайн-магазинов, CRM-интеграция\n\n"
         "📩 Для заказа нажмите кнопку «Заказать бота» в главном меню."
@@ -100,10 +95,10 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
 async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "ℹ️ *О НАШЕЙ СТУДИИ*\n"
-        "• • • • • • • • • • • •\n\n"
-        "Мы — небольшая студия разработчиков, специализирующаяся на создании Telegram-ботов\n"
-        "для бизнеса. Наш ведущий специалист имеет сертификат об окончании\n"
+        f"ℹ️ *О НАШЕЙ СТУДИИ*\n"
+        f"{LINE}\n\n"
+        "Мы — небольшая студия разработчиков, специализирующаяся на создании Telegram-ботов для бизнеса.\n"
+        "Наш ведущий специалист имеет сертификат об окончании\n"
         "*очного курса программирования на Python от МФТИ (Московского физико-технического института)*\n"
         "и является Junior-программистом Python.\n\n"
         "🔹 *Наши принципы:*\n"
@@ -118,15 +113,15 @@ async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   • Боты для YouTube-каналов с генерацией идей для контента\n"
         "   • Боты-помощники для техподдержки сайтов и интернет-магазинов\n"
         "   • Автоматизация записи и управления клиентами в разных сферах\n\n"
-        "• • • • • • • • • • • •\n"
+        f"{LINE}\n"
         "📬 Для сотрудничества воспользуйтесь кнопкой «Заказать бота»\n"
         "или напишите нам напрямую – мы всегда на связи."
     )
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
 async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "📝 *ОФОРМЛЕНИЕ ЗАЯВКИ*\n"
-        "• • • • • • • • • • • •\n\n"
+        f"📝 *ОФОРМЛЕНИЕ ЗАЯВКИ*\n"
+        f"{LINE}\n\n"
         "Пожалуйста, опишите ваш проект в одном сообщении. Укажите:\n\n"
         "❄️ *Цель и сфера* – для чего нужен бот, какая у вас деятельность\n"
         "🌀 *Функционал* – запись, портфолио, админ-панель, онлайн-оплата, генерация идей, техподдержка и т.д.\n"
@@ -136,7 +131,7 @@ async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Встроить рекламные блоки\n"
         "• Сделать обязательную подписку на ваш Telegram-канал\n"
         "• Получить исходный код на GitHub\n\n"
-        "• • • • • • • • • • • •\n"
+        f"{LINE}\n"
         "⏳ *Ожидайте ответа в течение 12 часов* – мы изучим ваши пожелания\n"
         "и подготовим предложение.\n\n"
         "Для отмены диалога нажмите кнопку ниже."
@@ -150,7 +145,7 @@ async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=f"🆕 *НОВАЯ ЗАЯВКА*\n"
-             f"• • • • • • • • • • • •\n"
+             f"{LINE}\n"
              f"👤 Клиент: {user.full_name} (ID: `{user.id}`)\n"
              f"📩 Текст заявки:\n{text}",
         parse_mode="Markdown"
@@ -171,7 +166,7 @@ async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=f"💬 *Сообщение от клиента*\n"
-             f"• • • • • • • • • • • •\n"
+             f"{LINE}\n"
              f"👤 {user.full_name} (ID: `{user.id}`):\n{update.message.text}",
         parse_mode="Markdown"
     )
@@ -188,40 +183,22 @@ async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE)
         match = re.search(r'ID:\s*(\d+)', original)
         if match:
             user_id = int(match.group(1))
-            reply_text = f"👨‍💼 *Ответ менеджера:*\n• • • • • • • • • • • •\n{update.message.text}"
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=reply_text,
-                parse_mode="Markdown"
-            )
+            reply_text = f"👨‍💼 *Ответ менеджера:*\n{LINE}\n{update.message.text}"
+            await context.bot.send_message(chat_id=user_id, text=reply_text, parse_mode="Markdown")
             await update.message.reply_text("✅ *Ответ успешно отправлен клиенту.*", parse_mode="Markdown")
         else:
-            await update.message.reply_text(
-                "⚠️ *Не удалось определить получателя.*\n"
-                "Убедитесь, что вы отвечаете на сообщение, пересланное от клиента.",
-                parse_mode="Markdown"
-            )
+            await update.message.reply_text("⚠️ *Не удалось определить получателя.*\nУбедитесь, что вы отвечаете на сообщение, пересланное от клиента.", parse_mode="Markdown")
     else:
-        await update.message.reply_text(
-            "ℹ️ *Чтобы ответить клиенту,* нажмите «Ответить» на его сообщении в этом чате.",
-            parse_mode="Markdown"
-        )
+        await update.message.reply_text("ℹ️ *Чтобы ответить клиенту,* нажмите «Ответить» на его сообщении в этом чате.", parse_mode="Markdown")
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get('in_order'):
         return await receive_order(update, context)
     if update.effective_user.id != ADMIN_ID:
         return await forward_to_admin(update, context)
-    await update.message.reply_text(
-        "Используйте, пожалуйста, кнопки меню для навигации.",
-        reply_markup=get_main_keyboard()
-    )
+    await update.message.reply_text("Используйте, пожалуйста, кнопки меню для навигации.", reply_markup=get_main_keyboard())
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
-    await update.effective_message.reply_text(
-        "⏹ *Диалог отменён.* Вы вернулись в главное меню.",
-        parse_mode="Markdown",
-        reply_markup=get_main_keyboard()
-    )
+    await update.effective_message.reply_text("⏹ *Диалог отменён.* Вы вернулись в главное меню.", parse_mode="Markdown", reply_markup=get_main_keyboard())
     return ConversationHandler.END
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
