@@ -3,22 +3,27 @@ import re
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
+
 load_dotenv()
 BOT_TOKEN = os.environ['BOT_TOKEN']
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
 WELCOME_IMAGE_URL = os.environ.get('WELCOME_IMAGE_URL')
 WAITING_ORDER = 1
-LINE = "━━━━━━━━━━━━━━━━━━━━━"  
+LINE = "━━━━━━━━━━━━━━━━━━━━━"
+
 def get_main_keyboard():
     keyboard = [
         [InlineKeyboardButton("📋 Тарифы", callback_data="tariffs")],
         [InlineKeyboardButton("📩 Заказать бота", callback_data="order")],
+        [InlineKeyboardButton("📁 Портфолио", callback_data="portfolio")],
         [InlineKeyboardButton("ℹ️ О студии", callback_data="about")]
     ]
     return InlineKeyboardMarkup(keyboard)
+
 def get_cancel_keyboard():
     keyboard = [[InlineKeyboardButton("❌ Отменить заказ", callback_data="cancel_order")]]
     return InlineKeyboardMarkup(keyboard)
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
     caption = (
@@ -43,7 +48,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "   🌐 Интернет-магазины, сайты и онлайн-сервисы\n"
         "   и другие — подберём решение под ваши задачи.\n\n"
         f"{LINE}\n"
-        "📌 *Ознакомьтесь с тарифами* или *оставьте заявку* —\n"
+        "📌 *Ознакомьтесь с тарифами, портфолио или оставьте заявку* —\n"
         "мы подготовим индивидуальное коммерческое предложение.\n\n"
         "👇 *Нажмите на кнопку ниже, чтобы продолжить*"
     )
@@ -55,6 +60,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(caption, parse_mode="Markdown", reply_markup=get_main_keyboard())
     return ConversationHandler.END
+
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -63,10 +69,13 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_tariffs(update, context)
     elif data == "order":
         await start_order(update, context)
+    elif data == "portfolio":
+        await show_portfolio(update, context)
     elif data == "about":
         await about_us(update, context)
     elif data == "cancel_order":
         await cancel(update, context)
+
 async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"💼 *НАШИ ТАРИФЫ*\n"
@@ -95,6 +104,29 @@ async def show_tariffs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📩 Для заказа нажмите кнопку «Заказать бота» в главном меню."
     )
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+
+async def show_portfolio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        f"📁 *НАШЕ ПОРТФОЛИО*\n"
+        f"{LINE}\n\n"
+        "Мы создали множество ботов для разных сфер. Вот несколько примеров:\n\n"
+        "🤖 *@ALPHAbarberBOT* – бот для барбершопа\n"
+        "   • Запись на стрижку с календарём и выбором времени\n"
+        "   • Админ-панель: просмотр записей, управление барберами, отключение дней\n"
+        "   • Хранение данных в SQLite3\n"
+        "   • Уведомления администратора о новых записях\n"
+        "   • Отмена записей клиентами\n"
+        "   • И многое другое для автоматизации вашего бизнеса\n\n"
+        "🤖 *@SynthesizzBOT* – бот для ютубера [Synthesiz](https://www.youtube.com/@Synthesizzz)\n"
+        "   • Максимально простой и интуитивно понятный интерфейс\n"
+        "   • Высокая надежность и быстрота в использовании\n"
+        "   • Оптимизирован для работы с большим количеством подписчиков\n"
+        "   • Гибкая настройка под задачи автора\n\n"
+        "Если вам нужен подобный бот или любой другой – оформляйте заказ!\n"
+        "Мы реализуем любой функционал под ваши задачи."
+    )
+    await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+
 async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"ℹ️ *О НАШЕЙ СТУДИИ*\n"
@@ -121,11 +153,12 @@ async def about_us(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "или напишите нам напрямую – мы всегда на связи."
     )
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_main_keyboard())
+
 async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"📝 *ОФОРМЛЕНИЕ ЗАЯВКИ*\n"
         f"{LINE}\n\n"
-        "Пожалуйста, опишите ваш проект в одном сообщении. Укажите:\n\n"
+        "Опишите ваш проект в одном сообщении. Укажите:\n\n"
         "❄️ *Цель и сфера* – для чего нужен бот, какая у вас деятельность\n"
         "🌀 *Функционал* – запись, портфолио, админ-панель, онлайн-оплата, генерация идей, техподдержка и т.д.\n"
         "🌊 *Бюджет* – желаемый диапазон стоимости\n"
@@ -135,6 +168,7 @@ async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Сделать обязательную подписку на ваш Telegram-канал\n"
         "• Интегрировать платёжную систему (ЮKassa, PayMaster, Bank 131, Robokassa, PayBox.money, PSC)\n"
         "• Получить исходный код на GitHub\n\n"
+        "Вы также можете приложить файлы (ТЗ, скриншоты, примеры) – просто отправьте их вместе с описанием.\n\n"
         f"{LINE}\n"
         "⏳ *Ожидайте ответа в течение 12 часов* – мы изучим ваши пожелания\n"
         "и подготовим предложение.\n\n"
@@ -143,17 +177,36 @@ async def start_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(text, parse_mode="Markdown", reply_markup=get_cancel_keyboard())
     context.user_data['in_order'] = True
     return WAITING_ORDER
+
 async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    text = update.message.text
-    await context.bot.send_message(
-        chat_id=ADMIN_ID,
-        text=f"🆕 *НОВАЯ ЗАЯВКА*\n"
-             f"{LINE}\n"
-             f"👤 Клиент: {user.full_name} (ID: `{user.id}`)\n"
-             f"📩 Текст заявки:\n{text}",
-        parse_mode="Markdown"
-    )
+    message = update.message
+    text = message.text or message.caption or ""
+    if text:
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"🆕 *НОВАЯ ЗАЯВКА*\n"
+                 f"{LINE}\n"
+                 f"👤 Клиент: {user.full_name} (ID: `{user.id}`)\n"
+                 f"📩 Текст заявки:\n{text}",
+            parse_mode="Markdown"
+        )
+    if message.photo:
+        await context.bot.send_photo(chat_id=ADMIN_ID, photo=message.photo[-1].file_id, caption="📎 Вложение: фото")
+    if message.document:
+        await context.bot.send_document(chat_id=ADMIN_ID, document=message.document.file_id, caption="📎 Вложение: документ")
+    if message.video:
+        await context.bot.send_video(chat_id=ADMIN_ID, video=message.video.file_id, caption="📎 Вложение: видео")
+    if message.audio:
+        await context.bot.send_audio(chat_id=ADMIN_ID, audio=message.audio.file_id, caption="📎 Вложение: аудио")
+    if message.voice:
+        await context.bot.send_voice(chat_id=ADMIN_ID, voice=message.voice.file_id, caption="📎 Вложение: голосовое")
+    if message.animation:
+        await context.bot.send_animation(chat_id=ADMIN_ID, animation=message.animation.file_id, caption="📎 Вложение: GIF")
+    if message.sticker:
+        await context.bot.send_sticker(chat_id=ADMIN_ID, sticker=message.sticker.file_id)
+    if not text and not any([message.photo, message.document, message.video, message.audio, message.voice, message.animation, message.sticker]):
+        await context.bot.send_message(chat_id=ADMIN_ID, text=f"⚠️ Клиент {user.full_name} отправил пустое сообщение.")
     await update.message.reply_text(
         "✅ *Ваша заявка принята!*\n\n"
         "Мы свяжемся с вами в ближайшее время (обычно в течение 12 часов).\n"
@@ -163,22 +216,41 @@ async def receive_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     context.user_data['in_order'] = False
     return ConversationHandler.END
+
 async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if user.id == ADMIN_ID:
         return
-    await context.bot.send_message(
-        chat_id=ADMIN_ID,
-        text=f"💬 *Сообщение от клиента*\n"
-             f"{LINE}\n"
-             f"👤 {user.full_name} (ID: `{user.id}`):\n{update.message.text}",
-        parse_mode="Markdown"
-    )
+    message = update.message
+    text = message.text or message.caption or ""
+    if text:
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"💬 *Сообщение от клиента*\n"
+                 f"{LINE}\n"
+                 f"👤 {user.full_name} (ID: `{user.id}`):\n{text}",
+            parse_mode="Markdown"
+        )
+    if message.photo:
+        await context.bot.send_photo(chat_id=ADMIN_ID, photo=message.photo[-1].file_id, caption="📎 Вложение: фото")
+    if message.document:
+        await context.bot.send_document(chat_id=ADMIN_ID, document=message.document.file_id, caption="📎 Вложение: документ")
+    if message.video:
+        await context.bot.send_video(chat_id=ADMIN_ID, video=message.video.file_id, caption="📎 Вложение: видео")
+    if message.audio:
+        await context.bot.send_audio(chat_id=ADMIN_ID, audio=message.audio.file_id, caption="📎 Вложение: аудио")
+    if message.voice:
+        await context.bot.send_voice(chat_id=ADMIN_ID, voice=message.voice.file_id, caption="📎 Вложение: голосовое")
+    if message.animation:
+        await context.bot.send_animation(chat_id=ADMIN_ID, animation=message.animation.file_id, caption="📎 Вложение: GIF")
+    if message.sticker:
+        await context.bot.send_sticker(chat_id=ADMIN_ID, sticker=message.sticker.file_id)
     await update.message.reply_text(
         "✅ *Сообщение доставлено менеджеру.*\n"
         "Ответ придёт в течение 12 часов.",
         parse_mode="Markdown"
     )
+
 async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
@@ -187,30 +259,41 @@ async def handle_admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE)
         match = re.search(r'ID:\s*(\d+)', original)
         if match:
             user_id = int(match.group(1))
-            reply_text = f"👨‍💼 *Ответ менеджера:*\n{LINE}\n{update.message.text}"
-            await context.bot.send_message(chat_id=user_id, text=reply_text, parse_mode="Markdown")
-            await update.message.reply_text("✅ *Ответ успешно отправлен клиенту.*", parse_mode="Markdown")
+            await context.bot.send_message(chat_id=user_id, text="👨‍💼 *Ответ менеджера:*", parse_mode="Markdown")
+            try:
+                await context.bot.copy_message(
+                    chat_id=user_id,
+                    from_chat_id=update.effective_chat.id,
+                    message_id=update.message.message_id
+                )
+            except Exception as e:
+                await context.bot.send_message(chat_id=user_id, text="⚠️ Ошибка при отправке файла. Проверьте, что файл допустим.")
+            await update.message.reply_text("✅ *Ответ отправлен клиенту.*", parse_mode="Markdown")
+            return
         else:
             await update.message.reply_text("⚠️ *Не удалось определить получателя.*\nУбедитесь, что вы отвечаете на сообщение, пересланное от клиента.", parse_mode="Markdown")
     else:
         await update.message.reply_text("ℹ️ *Чтобы ответить клиенту,* нажмите «Ответить» на его сообщении в этом чате.", parse_mode="Markdown")
+
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get('in_order'):
         return await receive_order(update, context)
     if update.effective_user.id != ADMIN_ID:
         return await forward_to_admin(update, context)
     await update.message.reply_text("Используйте, пожалуйста, кнопки меню для навигации.", reply_markup=get_main_keyboard())
+
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['in_order'] = False
     await update.effective_message.reply_text("⏹ *Диалог отменён.* Вы вернулись в главное меню.", parse_mode="Markdown", reply_markup=get_main_keyboard())
     return ConversationHandler.END
+
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     conv_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(start_order, pattern="^order$")],
         states={
             WAITING_ORDER: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_order),
+                MessageHandler(filters.ALL & ~filters.COMMAND, receive_order),
                 CallbackQueryHandler(cancel, pattern="^cancel_order$")
             ],
         },
@@ -219,10 +302,11 @@ def main():
     )
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv_handler)
-    app.add_handler(CallbackQueryHandler(button_callback, pattern="^(tariffs|order|about|cancel_order)$"))
+    app.add_handler(CallbackQueryHandler(button_callback, pattern="^(tariffs|order|portfolio|about|cancel_order)$"))
     app.add_handler(MessageHandler(filters.TEXT & filters.User(ADMIN_ID), handle_admin_reply))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback))
+    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND & ~filters.User(ADMIN_ID), fallback))
     print("🚀 Бот запущен.")
     app.run_polling()
+
 if __name__ == "__main__":
     main()
